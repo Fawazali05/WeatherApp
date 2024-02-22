@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Weather App</title>
+</head>
+<body>
+    <div class="main">
+        <div class="card">
+            <div class="top">
+                <div class="search-div">
+                    <input class="city-name" type="text" >
+                    <button class="search-btn" onclick="handleClick()" >Search</button>
+                </div>
+            </div>
+            <div class="">
+                <div class="temperature">
+                    <img src="" alt="">
+                    <div class="mag"></div><div>&deg;C</div>
+                </div>
+                <div class="city">  </div>
+                <div class="description" ></div>
+            </div>
+            <div class="detail">
+                <div class="box">
+                    
+                    <img class="metric-img" src="humidity.png" alt="">
+                    <div class="humidity"></div>
+                    <div>Humidity</div>
+                </div>
+                <div class="box">
+                    
+                    <img class="metric-img" src="wind.png" alt="">
+                    <div class="wind"></div>
+                    <div>Wind</div>
+                </div>
+                <div class="box">
+                    <img class="metric-img" src="atmospheric-pressure.png" alt="">
+                    <div class="pressure"></div>
+                    <div>Pressure</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+
+<script>
+
+// https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&hourly=temperature_2m
+    async function getTemp()
+    {
+        const name = document.querySelector(".city-name");
+        // nam = name.value
+        let nam;
+        name.value === '' ? nam = "Pune" : nam = name.value  
+
+        console.log("name = ",nam);
+
+        // const temp =  await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=Chennai&count=1&language=en&format=json`)
+
+        const temp =  await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${nam}&count=1&language=en&format=json`)
+
+        const data = await temp.json()
+
+        // console.log(data.results[0].latitude)
+        // console.log(data.results[0].longitude)
+        // console.log(data.results[0].name)
+        const lat = data.results[0].latitude;
+        const long = data.results[0].longitude;
+    
+        return { lat,long};
+        // console.log(data.results[0].admin2)
+        // return data.results[0].admin2
+    }
+        
+    function handleClick()
+    {
+        const data = getTemp();
+        data.then(async (res) => {  
+            console.log("res",res);
+            const med = await fetch(`https://api.openweathermap.org/data/2.5/weather?&lat=${res.lat}&lon=${res.long}&appid=9c354b3c85ba428b40fe11a436a9b86b`)
+            const weather = await med.json()
+            console.log(weather);
+
+            const humidity = document.querySelector(".humidity");
+            humidity.textContent = weather.main.humidity + "%";
+
+            const wind = document.querySelector('.wind')
+            wind.textContent = weather.wind.speed + " km/hr";
+
+            const pressure = document.querySelector('.pressure')
+            pressure.textContent = weather.main.pressure + "hPa";
+
+            const temp = document.querySelector(".mag");
+            temp.textContent = (weather.main.temp - 273.15).toFixed(2) ;
+
+            const city = document.querySelector(".city");
+            city.textContent = weather.name ;
+
+            const description = document.querySelector(".description");
+            description.textContent = weather.weather[0].description;
+        }
+
+        )
+    }
+    handleClick()
+</script>
+</html>
